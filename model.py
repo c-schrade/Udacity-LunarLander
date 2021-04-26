@@ -17,8 +17,8 @@ class QNetwork(nn.Module):
         self.seed = torch.manual_seed(seed)
         "*** YOUR CODE HERE ***"
 
-        self.fc1 = nn.Linear(state_size,(state_size-action_size)/2)
-        self.fc2 = nn.Linear((state_size-action_size)/2,action_size)
+        self.fc1 = nn.Linear(state_size,(state_size+action_size)/2)
+        self.fc2 = nn.Linear((state_size+action_size)/2,action_size)
 
         self.dropout = nn.Dropout(p=0.3)
 
