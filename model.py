@@ -30,7 +30,7 @@ class QNetwork(nn.Module):
         """Build a network that maps state -> action values."""
 
         x = F.relu(self.fc1(state))
-        X = self.dropout(x)
-        output = self.fc2(X)
+        x = self.dropout(x)
+        output = self.fc2(x)
 
         return output
