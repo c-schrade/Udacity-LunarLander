@@ -34,8 +34,10 @@ class Agent():
         self.seed = random.seed(seed)
 
         # Q-Network
-        self.qnetwork_local = QNetwork(state_size, action_size, seed).to(device)
-        self.qnetwork_target = QNetwork(state_size, action_size, seed).to(device)
+        self.qnetwork_local = QNetwork(state_size, action_size, seed)
+        self.qnetwork_local = self.qnetwork_local.to(device)
+        self.qnetwork_target = QNetwork(state_size, action_size, seed)
+        self.qnetwork_target = self.qnetwork_target.to(device)
         self.optimizer = optim.Adam(self.qnetwork_local.parameters(), lr=LR)
 
         # Replay memory
@@ -88,21 +90,20 @@ class Agent():
         ## TODO: compute and minimize the loss
         "*** YOUR CODE HERE ***"
         
-        optimizer.zero_grad()
+        self.optimizer.zero_grad()
         
         output_local = self.qnetwork_local(states)
-        output_target = self.qnetwork_target(next_states)
-        
+        output_target = self.qnetwork_target(next_states).detach() # detach() is necessary because of softupdate below
+                                                                   # where local parameters are copied into the target param.
         q_of_states_actions = output_local.gather(1,actions)
         max_q_of_next_states,_ = torch.max(output_target, dim=1)
+        max_q_of_next_states = max_q_of_next_states.unsqueeze(1)
         
-        if done:
-            loss = 0.5*(reward-q_of_states_actions)**2
-        else:
-            loss = 0.5*(reward+gamma*max_q_of_next_states-q_of_states_actions)**2
+        
+        loss = torch.mean(0.5*(rewards+gamma*max_q_of_next_states*(1-dones)-q_of_states_actions)**2)
             
         loss.backward()
-        optimizer.step()
+        self.optimizer.step()
         
 
         # ------------------- update target network ------------------- #
